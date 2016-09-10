@@ -23,6 +23,28 @@ def pull_all(args):
             for line in client.pull(repository=repo, tag=tag, stream=True):
                 print(line)
 
+def clean(args):
+    client = docker.Client(base_url=args.base_url)
+    images = client.images()
+    for image in images:
+        is_need_remove = True
+        if image["RepoTags"] is not None:
+            for repo_tag in image["RepoTags"]:
+                if "<none>" not in repo_tag:
+                    # Images that don't have "<none>" should be ignored
+                    is_need_remove = False
+                    break
+
+        if not is_need_remove:
+            continue
+
+        image_id = image["Id"]
+        print("Removing image : %s ..." % image)
+        try:
+            client.remove_image(image_id, force=args.force)
+        except docker.errors.APIError as e:
+            print("ERROR! %s" % e.explanation.decode("utf-8"))
+
 def main(args=None):
     """The main routine."""
     if args is None:
@@ -30,12 +52,19 @@ def main(args=None):
 
     description = "Docker maintain commands"
     parser = argparse.ArgumentParser(description=description)
-    subparsers = parser.add_subparsers(help='sub-commands')
+    subparsers = parser.add_subparsers(dest='cmd', help='sub-commands')
+    subparsers.required = True
 
-    parser_pull_all = subparsers.add_parser(
+    subpraser = subparsers.add_parser(
         'pull-all', help='Pull all images with correct repository name and tags')
-    parser_pull_all.set_defaults(func=pull_all)
-    parser_pull_all.add_argument('--base_url', default=None)
+    subpraser.set_defaults(func=pull_all)
+    subpraser.add_argument('--base_url', default=None)
+
+    subpraser = subparsers.add_parser(
+        'clean', help='Clean all images with "<none>"')
+    subpraser.set_defaults(func=clean)
+    subpraser.add_argument('--base_url', default=None)
+    subpraser.add_argument('--force', action='store_true')
 
     args = parser.parse_args(args)
     return args.func(args)
