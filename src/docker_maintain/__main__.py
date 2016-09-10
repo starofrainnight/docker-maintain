@@ -2,6 +2,7 @@ import sys
 import docker
 import json
 import argparse
+import six
 
 def pull_all(args):
     client = docker.Client(base_url=args.base_url)
@@ -21,7 +22,7 @@ def pull_all(args):
             tag = splitted[1]
 
             for line in client.pull(repository=repo, tag=tag, stream=True):
-                print(line)
+                six.print_(line)
 
 def clean(args):
     client = docker.Client(base_url=args.base_url)
@@ -39,11 +40,11 @@ def clean(args):
             continue
 
         image_id = image["Id"]
-        print("Removing image : %s ..." % image)
+        six.print_("Removing image : %s ..." % image)
         try:
             client.remove_image(image_id, force=args.force)
         except docker.errors.APIError as e:
-            print("ERROR! %s" % e.explanation.decode("utf-8"))
+            six.print_("ERROR! %s" % e.explanation.decode("utf-8"))
 
 def main(args=None):
     """The main routine."""
