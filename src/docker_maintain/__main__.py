@@ -46,6 +46,17 @@ def clean(args):
         except docker.errors.APIError as e:
             six.print_("ERROR! %s" % e.explanation.decode("utf-8"))
 
+    containers = client.containers()
+    for container in containers:
+        if container["State"] == "running":
+            continue
+
+        six.print_("Removing container : %s ..." % container["Id"])
+        try:
+            client.remove_container(container["Id"])
+        except docker.errors.APIError as e:
+            six.print_("ERROR! %s" % e.explanation.decode("utf-8"))
+
 def main(args=None):
     """The main routine."""
     if args is None:
