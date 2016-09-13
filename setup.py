@@ -10,6 +10,7 @@ import shutil
 import logging
 import fnmatch
 import pydgutils
+import pydgutils.version
 from setuptools import setup, find_packages
 
 package_name = "docker-maintain"
@@ -23,9 +24,11 @@ long_description = (
     open("CHANGES.rst", "r").read()
 )
 
+exec(pydgutils.version.read_version_file(source_dir, package_name))
+
 setup(
     name=package_name,
-    version="0.0.1",
+    version=__version__,
     author="Hong-She Liang",
     author_email="starofrainnight@gmail.com",
     url="https://github.com/starofrainnight/%s" % package_name,
