@@ -4,6 +4,7 @@ import json
 import argparse
 import six
 
+
 def pull_all(args):
     client = docker.Client(base_url=args.base_url)
     images = client.images()
@@ -23,6 +24,7 @@ def pull_all(args):
 
             for line in client.pull(repository=repo, tag=tag, stream=True):
                 six.print_(line)
+
 
 def clean(args):
     client = docker.Client(base_url=args.base_url)
@@ -56,6 +58,7 @@ def clean(args):
             client.remove_container(container["Id"])
         except docker.errors.APIError as e:
             six.print_("ERROR! %s" % e.explanation.decode("utf-8"))
+
 
 def main(args=None):
     """The main routine."""
