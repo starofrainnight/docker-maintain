@@ -44,7 +44,7 @@ def clean(args):
             continue
 
         image_id = image.attrs["Id"]
-        six.print_("Removing image : %s ..." % image)
+        six.print_("Removing image : %s ..." % image_id)
         try:
             client.images.remove(image_id, force=args.force)
         except docker.errors.APIError as e:
