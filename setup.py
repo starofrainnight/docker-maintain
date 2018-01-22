@@ -48,7 +48,7 @@ setup(
     packages=our_packages,
     entry_points={
         'console_scripts': [
-            'docker-maintain = docker_maintain.__main__:main'
+            'docker-maintain = dockermaintain.__main__:main'
         ]
     },
     # If we don"t set the zip_safe to False, pip can"t find us.
