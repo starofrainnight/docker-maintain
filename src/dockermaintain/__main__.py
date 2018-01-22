@@ -6,14 +6,13 @@ import six
 
 
 def pull_all(args):
-    client = docker.Client(base_url=args.base_url)
-    images = client.images()
-    for image in images:
-        if image["RepoTags"] is None:
+    client = docker.from_env()
+    for image in client.images.list():
+        if image.attrs["RepoTags"] is None:
             # Ignored images that does not have repository or tags
             continue
 
-        for repo_tag in image["RepoTags"]:
+        for repo_tag in image.attrs["RepoTags"]:
             if "<none>" in repo_tag:
                 # Ignored images that have "<none>"
                 continue
@@ -22,17 +21,20 @@ def pull_all(args):
             repo = splitted[0]
             tag = splitted[1]
 
-            for line in client.pull(repository=repo, tag=tag, stream=True):
-                six.print_(line)
+            six.print_("Pulling %s ..." % repo_tag)
+            client.images.pull(name=repo, tag=tag)
 
 
 def clean(args):
-    client = docker.Client(base_url=args.base_url)
-    images = client.images()
-    for image in images:
+    client = docker.from_env()
+
+    six.print_("Prune containers ...")
+    client.containers.prune()
+
+    for image in client.images.list():
         is_need_remove = True
-        if image["RepoTags"] is not None:
-            for repo_tag in image["RepoTags"]:
+        if image.attrs["RepoTags"] is not None:
+            for repo_tag in image.attrs["RepoTags"]:
                 if "<none>" not in repo_tag:
                     # Images that don't have "<none>" should be ignored
                     is_need_remove = False
@@ -41,23 +43,12 @@ def clean(args):
         if not is_need_remove:
             continue
 
-        image_id = image["Id"]
+        image_id = image.attrs["Id"]
         six.print_("Removing image : %s ..." % image)
         try:
-            client.remove_image(image_id, force=args.force)
+            client.images.remove(image_id, force=args.force)
         except docker.errors.APIError as e:
-            six.print_("ERROR! %s" % e.explanation.decode("utf-8"))
-
-    containers = client.containers()
-    for container in containers:
-        if container["State"] == "running":
-            continue
-
-        six.print_("Removing container : %s ..." % container["Id"])
-        try:
-            client.remove_container(container["Id"])
-        except docker.errors.APIError as e:
-            six.print_("ERROR! %s" % e.explanation.decode("utf-8"))
+            six.print_("ERROR! %s" % e.explanation)
 
 
 def main(args=None):
