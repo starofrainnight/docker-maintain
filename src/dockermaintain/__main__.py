@@ -22,7 +22,7 @@ def pull_all(args):
             tag = splitted[1]
 
             six.print_("Pulling %s ..." % repo_tag)
-            client.images.pull(name=repo, tag=tag)
+            client.images.pull(repo, tag=tag)
 
 
 def clean(args):
@@ -74,6 +74,7 @@ def main(args=None):
 
     args = parser.parse_args(args)
     return args.func(args)
+
 
 if __name__ == "__main__":
     main()
